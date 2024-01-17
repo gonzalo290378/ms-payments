@@ -36,20 +36,20 @@ public class Payment {
     private Double amount;
 
     @Column(name = "issue_date")
-    private LocalDate issue_date;
+    private LocalDate issueDate;
 
     @Column(name = "payment_date")
-    private LocalDate payment_date;
+    private LocalDate paymentDate;
 
     @Enumerated(EnumType.STRING)
     private PaymentState state;
 
     @NotNull(message = "Account sender should have an account number")
     @Column(name = "account_sender")
-    private Long account_sender;
+    private Long accountNumberSender;
 
     @NotNull(message = "Account receiver should have an account number")
     @Column(name = "account_receiver")
-    private Long account_receiver;
+    private Long accountNumberReceiver;
 
 }

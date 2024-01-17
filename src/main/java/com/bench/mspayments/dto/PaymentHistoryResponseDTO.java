@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 
@@ -16,7 +17,7 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentResponseDTO implements Serializable {
+public class PaymentHistoryResponseDTO implements Serializable {
 
     @JsonProperty("id")
     private Long id;
@@ -39,13 +40,10 @@ public class PaymentResponseDTO implements Serializable {
     @JsonProperty("payment_date")
     private LocalDate paymentDate;
 
-    @JsonProperty("accountSender")
-    private Long accountSender;
-
-    @JsonProperty("accountReceiver")
-    private Long accountReceiver;
-
     @JsonProperty("accountNumberSender")
-    private Account accountNumberSender;
+    private Long accountNumberSender;
+
+    @JsonProperty("accountNumberReceiver")
+    private Long accountNumberReceiver;
 
 }

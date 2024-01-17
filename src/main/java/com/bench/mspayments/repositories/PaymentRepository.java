@@ -1,5 +1,6 @@
 package com.bench.mspayments.repositories;
 
+import com.bench.mspayments.dto.PaymentHistoryResponseDTO;
 import com.bench.mspayments.dto.PaymentResponseDTO;
 import com.bench.mspayments.model.Payment;
 import org.springframework.data.domain.Page;
@@ -14,12 +15,14 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     @Query("SELECT payments  " +
             "FROM Payment payments " +
-            "WHERE (:#{#paymentResponseDTO.paymentMethod} is null or payments.paymentMethod = :#{#paymentResponseDTO.paymentMethod}) " +
-            "AND (:#{#paymentResponseDTO.type} is null or payments.type = :#{#paymentResponseDTO.type}) " +
-            "AND (:#{#paymentResponseDTO.state} is null or payments.state = :#{#paymentResponseDTO.state}) " +
-            "AND (:#{#paymentResponseDTO.account_sender} is null or payments.account_sender = :#{#paymentResponseDTO.account_sender}) " +
-            "AND (:#{#paymentResponseDTO.account_receiver} is null or payments.account_receiver = :#{#paymentResponseDTO.account_receiver}) ")
+            "WHERE (:#{#paymentHistoryResponseDTO.paymentMethod} is null or payments.paymentMethod = :#{#paymentHistoryResponseDTO.paymentMethod}) " +
+            "AND (:#{#paymentHistoryResponseDTO.type} is null or payments.type = :#{#paymentHistoryResponseDTO.type}) " +
+            "AND (:#{#paymentHistoryResponseDTO.state} is null or payments.state = :#{#paymentHistoryResponseDTO.state}) " +
+            "AND (:#{#paymentHistoryResponseDTO.issueDate} is null or payments.issueDate = :#{#paymentHistoryResponseDTO.issueDate}) " +
+            "AND (:#{#paymentHistoryResponseDTO.paymentDate} is null or payments.paymentDate = :#{#paymentHistoryResponseDTO.paymentDate}) " +
+            "AND (:#{#paymentHistoryResponseDTO.accountNumberSender} is null or payments.accountNumberSender = :#{#paymentHistoryResponseDTO.accountNumberSender}) " +
+            "AND (:#{#paymentHistoryResponseDTO.accountNumberReceiver} is null or payments.accountNumberReceiver = :#{#paymentHistoryResponseDTO.accountNumberReceiver}) ")
 
-    Page<Payment> filter(@Param("paymentResponseDTO") PaymentResponseDTO paymentResponseDTO, Pageable pageable);
+    Page<Payment> getPaymentHistory(@Param("paymentHistoryResponseDTO") PaymentHistoryResponseDTO paymentHistoryResponseDTO, Pageable pageable);
 }
 
