@@ -1,7 +1,6 @@
 package com.bench.mspayments.mapper;
 
 import com.bench.mspayments.dto.PaymentHistoryResponseDTO;
-import com.bench.mspayments.dto.PaymentResponseDTO;
 import com.bench.mspayments.model.Payment;
 import org.mapstruct.Mapper;
 
