@@ -31,7 +31,7 @@ public class Payment {
     @Enumerated(EnumType.STRING)
     private TypeCurrency type;
 
-    @NotNull(message = "Balance should have a number")
+    @NotNull(message = "Amount should have a number")
     @Column(name = "amount")
     private Double amount;
 

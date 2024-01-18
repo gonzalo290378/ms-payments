@@ -1,7 +1,6 @@
 package com.bench.mspayments.repositories;
 
 import com.bench.mspayments.dto.PaymentHistoryResponseDTO;
-import com.bench.mspayments.dto.PaymentResponseDTO;
 import com.bench.mspayments.model.Payment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,8 +17,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             "WHERE (:#{#paymentHistoryResponseDTO.paymentMethod} is null or payments.paymentMethod = :#{#paymentHistoryResponseDTO.paymentMethod}) " +
             "AND (:#{#paymentHistoryResponseDTO.type} is null or payments.type = :#{#paymentHistoryResponseDTO.type}) " +
             "AND (:#{#paymentHistoryResponseDTO.state} is null or payments.state = :#{#paymentHistoryResponseDTO.state}) " +
-            "AND (:#{#paymentHistoryResponseDTO.issueDate} is null or payments.issueDate = :#{#paymentHistoryResponseDTO.issueDate}) " +
-            "AND (:#{#paymentHistoryResponseDTO.paymentDate} is null or payments.paymentDate = :#{#paymentHistoryResponseDTO.paymentDate}) " +
+            "AND (:#{#paymentHistoryResponseDTO.issueDate} is null or payments.issueDate >= :#{#paymentHistoryResponseDTO.issueDate}) " +
+            "AND (:#{#paymentHistoryResponseDTO.paymentDate} is null or payments.paymentDate <= :#{#paymentHistoryResponseDTO.paymentDate}) " +
             "AND (:#{#paymentHistoryResponseDTO.accountNumberSender} is null or payments.accountNumberSender = :#{#paymentHistoryResponseDTO.accountNumberSender}) " +
             "AND (:#{#paymentHistoryResponseDTO.accountNumberReceiver} is null or payments.accountNumberReceiver = :#{#paymentHistoryResponseDTO.accountNumberReceiver}) ")
 

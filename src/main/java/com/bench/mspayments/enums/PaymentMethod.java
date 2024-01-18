@@ -4,7 +4,7 @@ public enum PaymentMethod {
 
     TRANSFER("TRANSFER"),
     ECHEQ("ECHEQ"),
-    DEBIT_CARD("DEBIT_CARD");
+    EMONEY("EMONEY");
 
     private String paymentMethod;
 
