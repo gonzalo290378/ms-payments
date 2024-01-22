@@ -46,4 +46,10 @@ public class PaymentHistoryResponseDTO implements Serializable {
     @JsonProperty("accountNumberReceiver")
     private Long accountNumberReceiver;
 
+    @JsonProperty("dniSender")
+    private Long dniSender;
+
+    @JsonProperty("dniReceiver")
+    private Long dniReceiver;
+
 }

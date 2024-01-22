@@ -1,28 +1,25 @@
 package com.bench.mspayments.controllers;
 
-import com.bench.mspayments.dto.BankTransferResponseDTO;
-import com.bench.mspayments.dto.ECheckResponseDTO;
-import com.bench.mspayments.dto.EMoneyResponseDTO;
-import com.bench.mspayments.dto.PaymentHistoryResponseDTO;
+import com.bench.mspayments.dto.*;
 import com.bench.mspayments.enums.PaymentMethod;
 import com.bench.mspayments.enums.PaymentState;
 import com.bench.mspayments.enums.TypeCurrency;
-import com.bench.mspayments.model.Account;
-import com.bench.mspayments.model.Payment;
+import com.bench.mspayments.model.BankTransfer;
+import com.bench.mspayments.model.ECheck;
+import com.bench.mspayments.model.EMoney;
 import com.bench.mspayments.service.impl.PaymentServiceImpl;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -46,13 +43,13 @@ public class PaymentController {
     private String text;
 
     @GetMapping("/filter")
-    public ResponseEntity<Page<PaymentHistoryResponseDTO>> filter(
-            @RequestParam(name = "page", defaultValue = "0") Integer page,
-            @RequestParam(name = "size", defaultValue = "10") Integer size,
-            @RequestParam(name = "accountSender", required = true) Long accountNumberSender,
+    public ResponseEntity<PaymentDTO> filter(
+            @RequestParam(name = "accountSender", required = false) Long accountNumberSender,
             @RequestParam(name = "accountReceiver", required = false) Long accountNumberReceiver,
             @RequestParam(name = "issueDate", required = false) LocalDate issueDate,
             @RequestParam(name = "paymentDate", required = false) LocalDate paymentDate,
+            @RequestParam(name = "dniSender", required = false) Long dniSender,
+            @RequestParam(name = "dniReceiver", required = false) Long dniReceiver,
             @RequestParam(name = "paymentMethod", required = false) PaymentMethod paymentMethod,
             @RequestParam(name = "type", required = false) TypeCurrency type,
             @RequestParam(name = "state", required = false) PaymentState state) {
@@ -63,28 +60,36 @@ public class PaymentController {
                 .issueDate(issueDate)
                 .paymentDate(paymentDate)
                 .paymentMethod(paymentMethod)
+                .dniReceiver(dniReceiver)
+                .dniSender(dniSender)
                 .type(type)
                 .state(state)
                 .build();
-        return ResponseEntity.ok(paymentServiceImpl.filter(paymentHistoryResponseDTO, page, size));
+        return ResponseEntity.ok(paymentServiceImpl.filter(paymentHistoryResponseDTO));
     }
 
     @PostMapping("/bank-transfer")
-    public ResponseEntity<Payment> saveBankTransfer(@RequestBody BankTransferResponseDTO bankTransferResponseDTO) {
+    public ResponseEntity<BankTransfer> saveBankTransfer(@RequestBody BankTransferResponseDTO bankTransferResponseDTO) {
         log.info("Calling saveBankTransfer with {}", bankTransferResponseDTO);
         return ResponseEntity.ok(paymentServiceImpl.saveBankTransfer(bankTransferResponseDTO));
     }
 
     @PostMapping("/e-check")
-    public ResponseEntity<Payment> saveEheck(@RequestBody ECheckResponseDTO eCheckResponseDTO) {
+    public ResponseEntity<ECheck> saveEheck(@RequestBody ECheckResponseDTO eCheckResponseDTO) {
         log.info("Calling saveEheck with {}", eCheckResponseDTO);
-        return ResponseEntity.ok(paymentServiceImpl.saveEheck(eCheckResponseDTO));
+        return ResponseEntity.ok(paymentServiceImpl.saveECheck(eCheckResponseDTO));
     }
 
     @PostMapping("/e-money")
-    public ResponseEntity<Payment> saveEmoney(@RequestBody EMoneyResponseDTO eMoneyResponseDTO) {
+    public ResponseEntity<EMoney> saveEmoney(@RequestBody EMoneyResponseDTO eMoneyResponseDTO) {
         log.info("Calling saveEmoney with {}", eMoneyResponseDTO);
         return ResponseEntity.ok(paymentServiceImpl.saveEmoney(eMoneyResponseDTO));
+    }
+
+    @GetMapping("/job-transfer")
+    public List<BankTransfer> jobTransfer() {
+        log.info("Calling jobTransfer with {}");
+        return paymentServiceImpl.jobTransfer();
     }
 
 
@@ -100,7 +105,6 @@ public class PaymentController {
         }
         return new ResponseEntity<Map<String, String>>(json, HttpStatus.OK);
     }
-
 
     @GetMapping("/load-balancer")
     public ResponseEntity<?> loadBalancer() {

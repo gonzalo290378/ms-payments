@@ -5,6 +5,7 @@ import com.bench.mspayments.enums.PaymentState;
 import com.bench.mspayments.enums.TypeCurrency;
 import com.bench.mspayments.model.Account;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -33,16 +34,19 @@ public class BankTransferResponseDTO implements Serializable {
     @JsonProperty("amount")
     private Double amount;
 
-    @JsonProperty("issue_date")
+    @JsonProperty("issueDate")
     private LocalDate issueDate;
 
-    @JsonProperty("payment_date")
+    @JsonProperty("paymentDate")
     private LocalDate paymentDate;
 
-    @JsonProperty("accountSender")
-    private Long accountSender;
+    @JsonProperty("accountNumberSender")
+    private Long accountNumberSender;
 
-    @JsonProperty("accountReceiver")
-    private Long accountReceiver;
+    @JsonProperty("accountNumberReceiver")
+    private Long accountNumberReceiver;
+
+    @Transient
+    private Long edays;
 
 }
