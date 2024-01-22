@@ -54,4 +54,28 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(AccountSenderEqualReceiverException.class)
+    public final ResponseEntity<ErrorDetails> handleAccountSenderEqualReceiverException(Exception e, WebRequest webRequest) throws Exception {
+        ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(), e.getMessage(), webRequest.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(AccountTypeException.class)
+    public final ResponseEntity<ErrorDetails> handleAccountTypeException(Exception e, WebRequest webRequest) throws Exception {
+        ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(), e.getMessage(), webRequest.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(EdaysException.class)
+    public final ResponseEntity<ErrorDetails> handleEdaysException(Exception e, WebRequest webRequest) throws Exception {
+        ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(), e.getMessage(), webRequest.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(InsufficientFundsFoundException.class)
+    public final ResponseEntity<ErrorDetails> handleInsufficientFundsFoundException(Exception e, WebRequest webRequest) throws Exception {
+        ErrorDetails errorDetails = new ErrorDetails(LocalDate.now(), e.getMessage(), webRequest.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
+    }
+
 }

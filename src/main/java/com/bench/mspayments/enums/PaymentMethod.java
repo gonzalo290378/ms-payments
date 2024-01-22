@@ -1,7 +1,6 @@
 package com.bench.mspayments.enums;
 
 public enum PaymentMethod {
-
     TRANSFER("TRANSFER"),
     ECHEQ("ECHEQ"),
     EMONEY("EMONEY");

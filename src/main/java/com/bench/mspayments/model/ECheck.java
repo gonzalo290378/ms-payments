@@ -13,18 +13,19 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "payments")
+@Table(name = "e_check")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Payment {
+public class ECheck {
 
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "payment_method")
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
@@ -51,5 +52,8 @@ public class Payment {
     @NotNull(message = "Account receiver should have an account number")
     @Column(name = "account_receiver")
     private Long accountNumberReceiver;
+
+    @Transient
+    private Long edays;
 
 }

@@ -1,24 +1,32 @@
 package com.bench.mspayments.service.impl;
 
-import com.bench.mspayments.dto.BankTransferResponseDTO;
-import com.bench.mspayments.dto.ECheckResponseDTO;
-import com.bench.mspayments.dto.EMoneyResponseDTO;
-import com.bench.mspayments.dto.PaymentHistoryResponseDTO;
-import com.bench.mspayments.mapper.PaymentMapper;
+import com.bench.mspayments.dto.*;
+import com.bench.mspayments.enums.PaymentMethod;
+import com.bench.mspayments.enums.PaymentState;
+import com.bench.mspayments.exceptions.AccountNotFoundException;
+import com.bench.mspayments.exceptions.AccountSenderEqualReceiverException;
+import com.bench.mspayments.exceptions.AccountTypeException;
+import com.bench.mspayments.exceptions.InsufficientFundsFoundException;
 import com.bench.mspayments.model.Account;
-import com.bench.mspayments.model.Payment;
-import com.bench.mspayments.repositories.PaymentRepository;
+import com.bench.mspayments.model.BankTransfer;
+import com.bench.mspayments.model.ECheck;
+import com.bench.mspayments.model.EMoney;
+import com.bench.mspayments.repositories.BankTransferRepository;
+import com.bench.mspayments.repositories.ECheckRepository;
+import com.bench.mspayments.repositories.EmoneyRepository;
 import com.bench.mspayments.service.PaymentService;
-import com.bench.mspayments.validator.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 
 @Service("serviceRestTemplate")
 public class PaymentServiceImpl implements PaymentService {
@@ -27,41 +35,126 @@ public class PaymentServiceImpl implements PaymentService {
     private RestTemplate restTemplate;
 
     @Autowired
-    private PaymentRepository paymentRepository;
+    private BankTransferRepository bankTransferRepository;
 
     @Autowired
-    private PaymentMapper paymentMapper;
+    private EmoneyRepository emoneyRepository;
 
-    private Validator validator;
+    @Autowired
+    private ECheckRepository eCheckRepository;
 
+    @Transactional(readOnly = false)
+    public BankTransfer saveBankTransfer(BankTransferResponseDTO bankTransferDTO) {
+        validations(bankTransferDTO);
+
+        BankTransfer bankTransfer = new BankTransfer().builder()
+                .paymentMethod(PaymentMethod.TRANSFER)
+                .type(bankTransferDTO.getType())
+                .state(PaymentState.IN_PROCESS)
+                .amount(bankTransferDTO.getAmount())
+                .issueDate(LocalDate.now())
+                .paymentDate(bankTransferDTO.getPaymentDate())
+                .accountNumberSender(bankTransferDTO.getAccountNumberSender())
+                .accountNumberReceiver(bankTransferDTO.getAccountNumberReceiver())
+                .build();
+
+        bankTransfer = bankTransferRepository.save(bankTransfer);
+
+        if (bankTransfer.getPaymentDate().isEqual(LocalDate.now())) {
+            jobTransfer();
+        }
+
+        return bankTransfer;
+    }
+
+    @Transactional(readOnly = false)
+    public ECheck saveECheck(ECheckResponseDTO eCheckResponseDTO) {
+        return null;
+    }
+
+    @Transactional(readOnly = false)
+    public EMoney saveEmoney(EMoneyResponseDTO eMoneyResponseDTO) {
+        return null;
+    }
 
     @Transactional(readOnly = true)
-    public Account getAccount(Long accountNumber) {
+    public PaymentDTO filter(PaymentHistoryResponseDTO paymentHistoryResponseDTO) {
+        List<BankTransfer> bankTransferList = bankTransferRepository.getBankTransfer(paymentHistoryResponseDTO);
+        List<EMoney> emoneyList = emoneyRepository.getEmoney(paymentHistoryResponseDTO);
+        List<ECheck> echeckList = eCheckRepository.getECheck(paymentHistoryResponseDTO);
+        return new PaymentDTO().builder()
+                .bankTransfer(bankTransferList)
+                .eMoney(emoneyList)
+                .eCheck(echeckList)
+                .build();
+    }
+
+    private Boolean validations(BankTransferResponseDTO bankTransferDTO) {
+        Optional<Account> accountSender = this.getAccount(bankTransferDTO.getAccountNumberSender());
+        Optional<Account> accountReceiver = this.getAccount(bankTransferDTO.getAccountNumberReceiver());
+
+        if (accountSender.isEmpty() && accountReceiver.isEmpty())
+            throw new AccountNotFoundException("The accounts must exist");
+
+        if (accountSender.get().getAccountNumber().equals(accountReceiver.get().getAccountNumber()))
+            throw new AccountSenderEqualReceiverException("The accounts can not be identical");
+
+        if (!accountSender.get().getType().equalsIgnoreCase(accountReceiver.get().getType()) || !accountSender.get()
+                .getType().equalsIgnoreCase(bankTransferDTO.getType().getType()))
+            throw new AccountTypeException("The account types must be in the same currency");
+
+        if (bankTransferDTO.getPaymentDate().isBefore(LocalDate.now()))
+            throw new AccountNotFoundException("The payment date must be equals or greater than today");
+
+        if (accountSender.get().getBalance() < bankTransferDTO.getAmount())
+            throw new InsufficientFundsFoundException("The account does have not enough founds");
+
+        return true;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Account> getAccount(Long accountNumber) {
         HashMap<String, Long> uriPathVariable = new HashMap<>();
         uriPathVariable.put("accountNumber", accountNumber);
-        return restTemplate.getForObject("http://localhost:8090/ms-accounts/api/v1/accounts/{accountNumber}", Account.class, uriPathVariable);
+        return Optional.ofNullable(restTemplate.getForObject("http://localhost:8090/ms-accounts/api/v1/accounts/{accountNumber}", Account.class, uriPathVariable));
     }
 
-    @Transactional(readOnly = false)
-    public Payment saveBankTransfer(BankTransferResponseDTO bankTransferResponseDTO) {
-        return null;
+    public List<BankTransfer> jobTransfer() {
+        List<BankTransfer> bankTransferList = bankTransferRepository
+                .findAll()
+                .stream()
+                .filter(transfer -> transfer.getPaymentDate().isEqual(LocalDate.now()) && transfer.getState().equals(PaymentState.IN_PROCESS))
+                .collect(Collectors.toList());
+
+        for (BankTransfer bankTransfer : bankTransferList) {
+
+            Optional<Account> accountSender = this.getAccount(bankTransfer.getAccountNumberSender());
+            Optional<Account> accountReceiver = this.getAccount(bankTransfer.getAccountNumberReceiver());
+
+            if (accountSender.get().getBalance() - bankTransfer.getAmount() >= 0) {
+                accountSender.get().setBalance(accountSender.get().getBalance() - bankTransfer.getAmount());
+                accountReceiver.get().setBalance(accountReceiver.get().getBalance() + bankTransfer.getAmount());
+                saveAccount(accountSender.get());
+                saveAccount(accountReceiver.get());
+                bankTransfer.setState(PaymentState.APPROVED);
+                bankTransferRepository.save(bankTransfer);
+
+            } else {
+                bankTransfer.setState(PaymentState.REJECTED);
+                bankTransferRepository.save(bankTransfer);
+            }
+        }
+        return bankTransferList;
     }
 
-    @Transactional(readOnly = false)
-    public Payment saveEheck(ECheckResponseDTO eCheckResponseDTO) {
-        return null;
-    }
-
-    @Transactional(readOnly = false)
-    public Payment saveEmoney(EMoneyResponseDTO eMoneyResponseDTO) {
-        return null;
-    }
-
-
-    @Transactional(readOnly = true)
-    public Page<PaymentHistoryResponseDTO> filter(PaymentHistoryResponseDTO paymentHistoryResponseDTO, Integer page, Integer size) {
-        Page<Payment> paymentList = paymentRepository.getPaymentHistory(paymentHistoryResponseDTO, PageRequest.of(page, size));
-        return paymentList.map(it -> paymentMapper.toDTO(it));
+    public ResponseEntity<Account> saveAccount(Account account) {
+        HashMap<String, Long> uriPathVariable = new HashMap<>();
+        Long id = account.getAccountNumber();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<Account> entity = new HttpEntity<>(account, headers);
+        uriPathVariable.put("id", id);
+        return restTemplate.exchange("http://localhost:8090/ms-accounts/api/v1/accounts/{id}", HttpMethod.PUT, entity, Account.class, uriPathVariable);
     }
 
 }

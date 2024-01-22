@@ -4,6 +4,7 @@ import com.bench.mspayments.enums.PaymentMethod;
 import com.bench.mspayments.enums.PaymentState;
 import com.bench.mspayments.enums.TypeCurrency;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -36,10 +37,13 @@ public class ECheckResponseDTO implements Serializable {
     @JsonProperty("issue_date")
     private LocalDate issueDate;
 
+    @Transient
+    private Long edays;
+
     @JsonProperty("accountSender")
-    private Long accountSender;
+    private Long accountNumberSender;
 
     @JsonProperty("accountReceiver")
-    private Long accountReceiver;
+    private Long accountNumberReceiver;
 
 }

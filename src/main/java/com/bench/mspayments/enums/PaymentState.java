@@ -4,6 +4,8 @@ public enum PaymentState {
 
     IN_PROCESS("IN_PROCESS"),
     APPROVED("APPROVED"),
+
+    REJECTED("REJECTED"),
     DEFERRED_PAYMENT("DEFERRED_PAYMENT");
 
     private String state;
