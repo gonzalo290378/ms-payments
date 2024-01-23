@@ -22,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -52,7 +54,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .type(bankTransferDTO.getType())
                 .state(PaymentState.IN_PROCESS)
                 .amount(bankTransferDTO.getAmount())
-                .issueDate(LocalDate.now())
+                .issueDate(now())
                 .paymentDate(bankTransferDTO.getPaymentDate())
                 .accountNumberSender(bankTransferDTO.getAccountNumberSender())
                 .accountNumberReceiver(bankTransferDTO.getAccountNumberReceiver())
@@ -60,7 +62,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         bankTransfer = bankTransferRepository.save(bankTransfer);
 
-        if (bankTransfer.getPaymentDate().isEqual(LocalDate.now())) {
+        if (bankTransfer.getPaymentDate().isEqual(now())) {
             jobTransfer();
         }
 
@@ -103,7 +105,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .getType().equalsIgnoreCase(bankTransferDTO.getType().getType()))
             throw new AccountTypeException("The account types must be in the same currency");
 
-        if (bankTransferDTO.getPaymentDate().isBefore(LocalDate.now()))
+        if (bankTransferDTO.getPaymentDate().isBefore(now()))
             throw new AccountNotFoundException("The payment date must be equals or greater than today");
 
         if (accountSender.get().getBalance() < bankTransferDTO.getAmount())
@@ -123,7 +125,7 @@ public class PaymentServiceImpl implements PaymentService {
         List<BankTransfer> bankTransferList = bankTransferRepository
                 .findAll()
                 .stream()
-                .filter(transfer -> transfer.getPaymentDate().isEqual(LocalDate.now()) && transfer.getState().equals(PaymentState.IN_PROCESS))
+                .filter(transfer -> transfer.getPaymentDate().isEqual(now()) && transfer.getState().equals(PaymentState.IN_PROCESS))
                 .collect(Collectors.toList());
 
         for (BankTransfer bankTransfer : bankTransferList) {
@@ -155,6 +157,11 @@ public class PaymentServiceImpl implements PaymentService {
         HttpEntity<Account> entity = new HttpEntity<>(account, headers);
         uriPathVariable.put("id", id);
         return restTemplate.exchange("http://localhost:8090/ms-accounts/api/v1/accounts/{id}", HttpMethod.PUT, entity, Account.class, uriPathVariable);
+    }
+
+    public LocalDate now() {
+        LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/Argentina/Buenos_Aires"));
+        return localDateTime.toLocalDate();
     }
 
 }
