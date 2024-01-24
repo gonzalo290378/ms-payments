@@ -32,6 +32,9 @@ public class ECheck {
     @Enumerated(EnumType.STRING)
     private TypeCurrency type;
 
+    @Enumerated(EnumType.STRING)
+    private PaymentState state;
+
     @NotNull(message = "Amount should have a number")
     @Column(name = "amount")
     private Double amount;
@@ -41,9 +44,6 @@ public class ECheck {
 
     @Column(name = "payment_date")
     private LocalDate paymentDate;
-
-    @Enumerated(EnumType.STRING)
-    private PaymentState state;
 
     @NotNull(message = "Account sender should have an account number")
     @Column(name = "account_sender")

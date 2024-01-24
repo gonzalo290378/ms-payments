@@ -167,6 +167,7 @@ public class PaymentServiceImpl implements PaymentService {
         if (!echeckTransferList.isEmpty()) makeEcheckTransfer(echeckTransferList);
     }
 
+    //TODO: REFACTORIZACION
     @Transactional(readOnly = false)
     public List<BankTransfer> makeBankTransfer(List<BankTransfer> bankTransferList) {
 
@@ -189,6 +190,7 @@ public class PaymentServiceImpl implements PaymentService {
         return bankTransferList;
     }
 
+    //TODO: REFACTORIZACION
     @Transactional(readOnly = false)
 
     public List<ECheck> makeEcheckTransfer(List<ECheck> makeEcheckTransfer) {
