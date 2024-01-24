@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.util.List;
 
+//TODO: LOS DTO PUEDEN CONTEMPLAR ENTIDADES COMO ATRIBUTOS?
 @Data
 @Builder
 @NoArgsConstructor
