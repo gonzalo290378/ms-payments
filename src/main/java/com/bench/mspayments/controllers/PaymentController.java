@@ -1,12 +1,13 @@
 package com.bench.mspayments.controllers;
 
-import com.bench.mspayments.dto.*;
+import com.bench.mspayments.dto.PaymentDTO;
+import com.bench.mspayments.dto.PaymentHistoryResponseDTO;
+import com.bench.mspayments.dto.TransferRequestDTO;
 import com.bench.mspayments.enums.PaymentMethod;
 import com.bench.mspayments.enums.PaymentState;
 import com.bench.mspayments.enums.TypeCurrency;
 import com.bench.mspayments.model.BankTransfer;
 import com.bench.mspayments.model.ECheck;
-import com.bench.mspayments.model.EMoney;
 import com.bench.mspayments.service.impl.PaymentServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +17,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -69,27 +68,22 @@ public class PaymentController {
     }
 
     @PostMapping("/bank-transfer")
-    public ResponseEntity<BankTransfer> saveBankTransfer(@RequestBody BankTransferResponseDTO bankTransferResponseDTO) {
-        log.info("Calling saveBankTransfer with {}", bankTransferResponseDTO);
-        return ResponseEntity.ok(paymentServiceImpl.saveBankTransfer(bankTransferResponseDTO));
+    public ResponseEntity<BankTransfer> saveBankTransfer(@RequestBody TransferRequestDTO transferRequestDTO) {
+        log.info("Calling saveBankTransfer with {}", transferRequestDTO);
+        return ResponseEntity.ok(paymentServiceImpl.saveBankTransfer(transferRequestDTO));
     }
 
     @PostMapping("/e-check")
-    public ResponseEntity<ECheck> saveEheck(@RequestBody ECheckResponseDTO eCheckResponseDTO) {
-        log.info("Calling saveEheck with {}", eCheckResponseDTO);
-        return ResponseEntity.ok(paymentServiceImpl.saveECheck(eCheckResponseDTO));
+    public ResponseEntity<ECheck> saveEheck(@RequestBody TransferRequestDTO transferRequestDTO) {
+        log.info("Calling saveEheck with {}", transferRequestDTO);
+        return ResponseEntity.ok(paymentServiceImpl.saveECheck(transferRequestDTO));
     }
 
-    @PostMapping("/e-money")
-    public ResponseEntity<EMoney> saveEmoney(@RequestBody EMoneyResponseDTO eMoneyResponseDTO) {
-        log.info("Calling saveEmoney with {}", eMoneyResponseDTO);
-        return ResponseEntity.ok(paymentServiceImpl.saveEmoney(eMoneyResponseDTO));
-    }
 
     @GetMapping("/job-transfer")
-    public List<BankTransfer> jobTransfer() {
+    public void jobTransfer() {
         log.info("Calling jobTransfer with {}");
-        return paymentServiceImpl.jobTransfer();
+        paymentServiceImpl.jobTransfer();
     }
 
 
