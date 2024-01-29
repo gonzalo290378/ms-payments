@@ -1,6 +1,6 @@
 package com.bench.mspayments.repositories;
 
-import com.bench.mspayments.dto.PaymentHistoryResponseDTO;
+import com.bench.mspayments.dto.PaymentResponseDTO;
 import com.bench.mspayments.model.BankTransfer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,6 +21,6 @@ public interface BankTransferRepository extends JpaRepository<BankTransfer, Long
             "AND (:#{#paymentHistoryResponseDTO.paymentDate} is null or bankTransfer.paymentDate <= :#{#paymentHistoryResponseDTO.paymentDate}) " +
             "AND (:#{#paymentHistoryResponseDTO.accountNumberSender} is null or bankTransfer.accountNumberSender = :#{#paymentHistoryResponseDTO.accountNumberSender}) " +
             "AND (:#{#paymentHistoryResponseDTO.accountNumberReceiver} is null or bankTransfer.accountNumberReceiver = :#{#paymentHistoryResponseDTO.accountNumberReceiver}) ")
-    public List<BankTransfer> getBankTransfer(@Param("paymentHistoryResponseDTO") PaymentHistoryResponseDTO paymentHistoryResponseDTO);
+    public List<BankTransfer> getBankTransfer(@Param("paymentHistoryResponseDTO") PaymentResponseDTO paymentHistoryResponseDTO);
 }
 

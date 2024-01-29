@@ -3,8 +3,8 @@ package com.bench.mspayments.dto;
 import com.bench.mspayments.enums.PaymentMethod;
 import com.bench.mspayments.enums.PaymentState;
 import com.bench.mspayments.enums.TypeCurrency;
-import com.bench.mspayments.model.Account;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +17,7 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentHistoryResponseDTO implements Serializable {
+public class PaymentRequestDTO implements Serializable {
 
     @JsonProperty("id")
     private Long id;
@@ -34,10 +34,10 @@ public class PaymentHistoryResponseDTO implements Serializable {
     @JsonProperty("amount")
     private Double amount;
 
-    @JsonProperty("issue_date")
+    @JsonProperty("issueDate")
     private LocalDate issueDate;
 
-    @JsonProperty("payment_date")
+    @JsonProperty("paymentDate")
     private LocalDate paymentDate;
 
     @JsonProperty("accountNumberSender")
@@ -51,5 +51,8 @@ public class PaymentHistoryResponseDTO implements Serializable {
 
     @JsonProperty("dniReceiver")
     private Long dniReceiver;
+
+    @Transient
+    private Long edays;
 
 }

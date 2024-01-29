@@ -1,11 +1,13 @@
 package com.bench.mspayments.controllers;
 
+import com.bench.mspayments.dto.ECheckDTO;
 import com.bench.mspayments.dto.PaymentDTO;
-import com.bench.mspayments.dto.PaymentHistoryResponseDTO;
-import com.bench.mspayments.dto.TransferRequestDTO;
+import com.bench.mspayments.dto.PaymentRequestDTO;
+import com.bench.mspayments.dto.PaymentResponseDTO;
 import com.bench.mspayments.enums.PaymentMethod;
 import com.bench.mspayments.enums.PaymentState;
 import com.bench.mspayments.enums.TypeCurrency;
+import com.bench.mspayments.model.Account;
 import com.bench.mspayments.model.BankTransfer;
 import com.bench.mspayments.model.ECheck;
 import com.bench.mspayments.service.impl.PaymentServiceImpl;
@@ -19,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -53,7 +56,7 @@ public class PaymentController {
             @RequestParam(name = "type", required = false) TypeCurrency type,
             @RequestParam(name = "state", required = false) PaymentState state) {
 
-        PaymentHistoryResponseDTO paymentHistoryResponseDTO = PaymentHistoryResponseDTO.builder()
+        PaymentResponseDTO paymentResponseDTO = PaymentResponseDTO.builder()
                 .accountNumberSender(accountNumberSender)
                 .accountNumberReceiver(accountNumberReceiver)
                 .issueDate(issueDate)
@@ -64,28 +67,44 @@ public class PaymentController {
                 .type(type)
                 .state(state)
                 .build();
-        return ResponseEntity.ok(paymentServiceImpl.filter(paymentHistoryResponseDTO));
+        return ResponseEntity.ok(paymentServiceImpl.filter(paymentResponseDTO));
     }
 
-    @PostMapping("/bank-transfer")
-    public ResponseEntity<BankTransfer> saveBankTransfer(@RequestBody TransferRequestDTO transferRequestDTO) {
-        log.info("Calling saveBankTransfer with {}", transferRequestDTO);
-        return ResponseEntity.ok(paymentServiceImpl.saveBankTransfer(transferRequestDTO));
+    @PostMapping("/processTransfer")
+    public ResponseEntity<BankTransfer> processTransfer(@RequestBody PaymentRequestDTO paymentRequestDTO) {
+        log.info("Calling saveBankTransfer with {}", paymentRequestDTO);
+        return ResponseEntity.ok(paymentServiceImpl.saveBankTransfer(paymentRequestDTO));
     }
 
-    @PostMapping("/e-check")
-    public ResponseEntity<ECheck> saveEheck(@RequestBody TransferRequestDTO transferRequestDTO) {
-        log.info("Calling saveEheck with {}", transferRequestDTO);
-        return ResponseEntity.ok(paymentServiceImpl.saveECheck(transferRequestDTO));
+    @PostMapping("/processEcheck")
+    public ResponseEntity<ECheck> processEcheck(@RequestBody PaymentRequestDTO paymentRequestDTO) {
+        log.info("Calling saveEheck with {}", paymentRequestDTO);
+        return ResponseEntity.ok(paymentServiceImpl.saveECheck(paymentRequestDTO));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ECheck> update(@PathVariable() Long id, @RequestBody ECheck eCheck) {
+        log.info("Calling update with {}", eCheck);
+        return ResponseEntity.ok(paymentServiceImpl.update(id, eCheck));
+    }
+
+    @GetMapping("/findProcessedByQueue")
+    public ResponseEntity<List<ECheckDTO>> findProcessedByQueue() {
+        log.info("Calling queue with {}");
+        return ResponseEntity.ok(paymentServiceImpl.findProcessedByQueue());
+    }
+
+    @GetMapping("/getAccount")
+    public ResponseEntity<Account> getAccount(Long accountNumber) {
+        log.info("Calling getAccount with {}");
+        return ResponseEntity.ok(paymentServiceImpl.getAccount(accountNumber).get());
+    }
 
     @GetMapping("/job-transfer")
     public void jobTransfer() {
         log.info("Calling jobTransfer with {}");
         paymentServiceImpl.jobTransfer();
     }
-
 
     @GetMapping("/get-config")
     public ResponseEntity<?> getConfig(@Value("${server.port}") String port) {
@@ -108,6 +127,4 @@ public class PaymentController {
         //response.put("users", accountServiceImpl.findAll());
         return ResponseEntity.ok(response);
     }
-
-
 }
