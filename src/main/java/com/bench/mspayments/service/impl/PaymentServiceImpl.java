@@ -171,7 +171,8 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    private BankTransfer transferProcess(BankTransferDTO bankTransfer, Optional<Account> accountSender, Optional<Account> accountReceiver) {
+    private BankTransfer transferProcess(BankTransferDTO bankTransfer, Optional<Account> accountSender,
+                                         Optional<Account> accountReceiver) {
         if (accountSender.get().getBalance() - bankTransfer.getAmount() >= 0) {
             accountSender.get().setBalance(accountSender.get().getBalance() - bankTransfer.getAmount());
             accountReceiver.get().setBalance(accountReceiver.get().getBalance() + bankTransfer.getAmount());
