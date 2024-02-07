@@ -67,6 +67,7 @@ public class PaymentController {
                 .type(type)
                 .state(state)
                 .build();
+        log.info("Calling filter with {}", paymentResponseDTO);
         return ResponseEntity.ok(paymentServiceImpl.filter(paymentResponseDTO));
     }
 
