@@ -18,8 +18,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,7 @@ public class PaymentController {
     private String text;
 
     @GetMapping("/filter")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<PaymentDTO> filter(
             @RequestParam(name = "accountSender", required = false) Long accountNumberSender,
             @RequestParam(name = "accountReceiver", required = false) Long accountNumberReceiver,
@@ -72,12 +75,14 @@ public class PaymentController {
     }
 
     @PostMapping("/processTransfer")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<BankTransfer> processTransfer(@RequestBody PaymentRequestDTO paymentRequestDTO) {
         log.info("Calling saveBankTransfer with {}", paymentRequestDTO);
         return ResponseEntity.ok(paymentServiceImpl.saveBankTransfer(paymentRequestDTO));
     }
 
     @PostMapping("/processEcheck")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<ECheck> processEcheck(@RequestBody PaymentRequestDTO paymentRequestDTO) {
         log.info("Calling saveEheck with {}", paymentRequestDTO);
         return ResponseEntity.ok(paymentServiceImpl.saveECheck(paymentRequestDTO));
@@ -90,18 +95,21 @@ public class PaymentController {
     }
 
     @GetMapping("/findProcessedByQueue")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<List<ECheckDTO>> findProcessedByQueue() {
         log.info("Calling queue with {}");
         return ResponseEntity.ok(paymentServiceImpl.findProcessedByQueue());
     }
 
     @GetMapping("/getAccount")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<Account> getAccount(Long accountNumber) {
         log.info("Calling getAccount with {}");
         return ResponseEntity.ok(paymentServiceImpl.getAccount(accountNumber).get());
     }
 
     @GetMapping("/job-transfer")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public void jobTransfer() {
         log.info("Calling jobTransfer with {}");
         paymentServiceImpl.jobTransfer();
@@ -127,5 +135,11 @@ public class PaymentController {
         response.put("loadBalancer", balancerTest);
         //response.put("users", accountServiceImpl.findAll());
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/authorized")
+    public Map<String, String> authorized(@RequestParam String code) {
+        log.info("Calling authorized with {}", code);
+        return Collections.singletonMap("code", code);
     }
 }
