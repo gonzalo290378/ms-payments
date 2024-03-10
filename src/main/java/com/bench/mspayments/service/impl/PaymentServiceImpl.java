@@ -16,6 +16,8 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -129,11 +131,16 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Transactional(readOnly = true)
     public Optional<Account> getAccount(Long accountNumber) {
+        HttpHeaders headers = new HttpHeaders();
+        String accessToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest().getHeader("Authorization");
+        headers.set(HttpHeaders.AUTHORIZATION, accessToken);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
         HashMap<String, Long> uriPathVariable = new HashMap<>();
         uriPathVariable.put("accountNumber", accountNumber);
-        return Optional.ofNullable(restTemplate.
-                getForObject("http://localhost:8090/ms-accounts/api/v1/accounts/{accountNumber}",
-                        Account.class, uriPathVariable));
+        ResponseEntity<Account> response = restTemplate
+                .exchange("http://localhost:8090/ms-accounts/api/v1/accounts/{accountNumber}", HttpMethod.GET, entity,
+                        Account.class, uriPathVariable);
+        return Optional.ofNullable(response.getBody());
     }
 
     private List<BankTransfer> bankTransferList() {
@@ -149,10 +156,8 @@ public class PaymentServiceImpl implements PaymentService {
         List<ECheck> echeckList = eCheckRepository
                 .findAll()
                 .stream()
-                .filter(transfer -> {
-                    return transfer.getState().equals(PaymentState.PROCESSED_BY_QUEUE) ||
-                            transfer.getState().equals(PaymentState.DEFERRED_PAYMENT);
-                })
+                .filter(transfer -> transfer.getState().equals(PaymentState.PROCESSED_BY_QUEUE) ||
+                        transfer.getState().equals(PaymentState.DEFERRED_PAYMENT))
                 .collect(Collectors.toList());
         return paymentMapper.toECheckDTOList(echeckList);
     }
@@ -187,6 +192,8 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional(readOnly = true)
     public void echeckTransfer(ECheckDTO eCheckDTO) {
         HttpHeaders headers = new HttpHeaders();
+        String accessToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest().getHeader("Authorization");
+        headers.set(HttpHeaders.AUTHORIZATION, accessToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<ECheckDTO> entity = new HttpEntity<>(eCheckDTO, headers);
         restTemplate.exchange("http://localhost:8090/ms-queue/api/v1/queue/deferred-payment",
@@ -195,13 +202,15 @@ public class PaymentServiceImpl implements PaymentService {
 
 
     public ResponseEntity<Account> save(Account account) {
+        HttpHeaders headers = new HttpHeaders();
+        String accessToken = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest().getHeader("Authorization");
+        headers.set(HttpHeaders.AUTHORIZATION, accessToken);
         HashMap<String, Long> uriPathVariable = new HashMap<>();
         Long id = account.getAccountNumber();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<Account> entity = new HttpEntity<>(account, headers);
         uriPathVariable.put("id", id);
-        return restTemplate.exchange("http://localhost:8090/ms-accounts/api/v1/accounts/{id}", HttpMethod.PUT, entity, Account.class, uriPathVariable);
+        return restTemplate.exchange("http://localhost:8090/ms-accounts/api/v1/accounts/{id}", HttpMethod.PUT, entity,
+                Account.class, uriPathVariable);
     }
 
     @Transactional(readOnly = false)
